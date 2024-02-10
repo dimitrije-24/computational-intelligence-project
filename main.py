@@ -118,23 +118,26 @@ def random_search():
 
     best_one = None
     best_board_value = float('inf')
+    best_mine_count = float('inf')
 
     num_iters = 1000000
     values = [None for _ in range(num_iters)]
 
     for i in range(num_iters):
         solution = initialize()
-        penalty = calc_board_value(solution)
-        if penalty < best_board_value:
+        board_value = calc_board_value(solution)
+        mine_count = calc_mines(solution)
+        if board_value < best_board_value or (board_value == best_board_value and mine_count < best_mine_count):
             best_one = solution
-            best_board_value = penalty
+            best_board_value = board_value
+            best_mine_count = mine_count
         values[i] = best_board_value
 
-    print('Board value',best_board_value)
-    print_board(best_one)
+    #print('Board value',best_board_value)
+    #print_board(best_one)
     plt.plot(range(num_iters),values)
     plt.show()
-        
+    return best_one, best_board_value
 
 def local_search_invert_best_improvement(solution,board_value):
     improved_board = True
@@ -229,22 +232,34 @@ def iterate():
     plt.plot(range(100),niz)
     plt.show()
 
-
 #iterate()
+
+option = input('Add some of the following options: r,ls,sa,vns,bf\n')
 start_time = time.time()
-solution, board_value = vns(5,10,100)
-#solution, board_value = simulated_annealing(100000)
-#solution_for_local_search = initialize()
-#value_for_local_search = calc_board_value(solution_for_local_search)
-#brute_solution = init_brute()
-#brute_force(brute_solution,0,0)
-#solution, board_value = local_search_invert_best_improvement(solution_for_local_search,value_for_local_search)
+if option == 'r':
+    solution, board_value = random_search()
+elif option == 'ls':
+    solution_for_local_search = initialize()
+    value_for_local_search = calc_board_value(solution_for_local_search)
+    solution, board_value = local_search_invert_best_improvement(solution_for_local_search, value_for_local_search)
+elif option == 'sa':
+    num_iter = int(input('Enter number of iterations: '))
+    solution, board_value = simulated_annealing(num_iter)
+elif option == 'vns':
+    k_min = int(input('Input k_min: '))
+    k_max = int(input('Input k_max: '))
+    num_iter = int(input('Input number of iterations: '))
+    solution, board_value = vns(k_min, k_max, num_iter)
+elif option == 'bf':
+    brute_solution = init_brute()
+    brute_force(brute_solution, 0, 0)
+    solution = brute_best_solution
+    board_value = brute_best_board_value
+else:
+    print('Nonexistent input')
+    exit(1)
     
-#random_search()
-
-#print_board(brute_best_solution)
-#print(brute_best_board_value)
-
 print_board(solution)
 print(board_value)
+
 print('Time elapsed: ', time.time() - start_time)
