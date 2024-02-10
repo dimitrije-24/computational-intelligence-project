@@ -21,6 +21,7 @@ class Individual:
     def __init__(self):
         self.code = self.initialize()
         self.fitness = self.board_value()
+        self.mines_total = self.count_total_mines()
 
     def initialize(self):
         map = {}
@@ -38,8 +39,12 @@ class Individual:
         for i in range(n):
             for j in range(m):
                 if (i,j) not in self.code:
-                    penalty += (int(array[i][j]) - Individual.count_mines(self.code,i,j))**2
+                    penalty += abs(int(array[i][j]) - Individual.count_mines(self.code,i,j))
         return penalty
+    
+    def count_total_mines(self):
+        return len([x for x in self.code if self.code[x]])
+
     
     @staticmethod
     def count_mines(matrix, i, j):
@@ -56,7 +61,7 @@ class Individual:
 
 def selection(population,tournament_size):
     choice = random.sample(population,tournament_size)
-    return min(choice,key=lambda x:x.fitness)
+    return min(choice,key=lambda x:(x.fitness,x.mines_total))
 
 def crossover(parent1,parent2,child1,child2):
     
@@ -101,15 +106,18 @@ def ga(population_size,num_generations,elitism_size,tournament_size,mutation_pro
             new_population[j].fitness = new_population[j].board_value()
             new_population[j+1].fitness = new_population[j+1].board_value()
 
+            new_population[j].fitness = new_population[j].count_total_mines()
+            new_population[j].fitness = new_population[j+1].count_total_mines()
+
         population = new_population.copy()
 
-        value = min(population,key=lambda x : x.fitness)
+        value = min(population,key=lambda x : (x.fitness,x.mines_total))
         values[i] = value.fitness
     
     print('Time needed: ', time.time() - start_time)
     plt.plot(range(num_generations),values)
     plt.show()
-    return min(population,key=lambda x: x.fitness)
+    return min(population,key=lambda x: (x.fitness,x.mines_total))
 
 def stampaj(solution):
     n = len(array)

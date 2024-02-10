@@ -1,14 +1,13 @@
 import random
 import copy
-from typing import List
 import matplotlib.pyplot as plt
 import time
 
 arrayp = [['1','.'],['.','.']]
 
-arrayp = [['1','.','.','.'],['.','.','.','.'],['.','.','4','.'],['.','.','.','.']]
+array = [['1','.','.','.'],['.','.','.','.'],['.','.','4','.'],['.','.','.','.']]
 
-array = [['1','.','1','.','1','.','2','.','1','1'],
+arrayp = [['1','.','1','.','1','.','2','.','1','1'],
          ['1','.','.','.','.','.','.','.','.','1'],
          ['.','.','3','.','.','2','.','.','.','.'],
          ['.','.','.','.','1','.','.','3','3','.'],
@@ -24,7 +23,7 @@ arrayp = [['1','.','1','.','1','.'],
          ['.','.','3','.','.','1'],
          ['.','.','.','.','1','.'],
          ['1','2','.','.','.','.'],
-         ['.','.','.','.','0','.']]
+         ['.','.','.','.','.','0']]
 
 arrayp = [['.','1','.','.','.'],
          ['1','.','2','.','.'],
@@ -55,18 +54,18 @@ def print_board(solution):
         print('\n')
 
 def count_mines(solution, i, j):
-    rows = len(array)
-    cols = len(array[0])
+    n = len(array)
+    m = len(array[0])
     count = 0
 
-    for x in range(max(0, i - 1), min(rows, i + 2)):
-        for y in range(max(0, j - 1), min(cols, j + 2)):
+    for x in range(max(0, i - 1), min(n, i + 2)):
+        for y in range(max(0, j - 1), min(m, j + 2)):
             if (x, y) != (i, j) and (x,y) in solution and solution[(x,y)]:
                 count += 1
 
     return count
 
-def board_value(solution):
+def calc_board_value(solution):
     n = len(array)
     m = len(array[0])
     penalty = 0
@@ -89,20 +88,20 @@ def init_brute():
     return map
 
 brute_best_solution = None
-brute_best_value = float('inf')
+brute_best_board_value = float('inf')
 brute_best_mines = float('inf')
 
 def brute_force(solution,m,n):
 
-    current_value = board_value(solution)
+    current_value = calc_board_value(solution)
     current_mines = calc_mines(solution)
 
     global brute_best_solution
-    global brute_best_value
+    global brute_best_board_value
     global brute_best_mines
-    if current_value < brute_best_value or (current_value == brute_best_value and current_mines < brute_best_mines):
+    if current_value < brute_best_board_value or (current_value == brute_best_board_value and current_mines < brute_best_mines):
         brute_best_solution = copy.deepcopy(solution)
-        brute_best_value = current_value
+        brute_best_board_value = current_value
         brute_best_mines = current_mines
 
     for i in range(m,len(array)):
@@ -118,47 +117,47 @@ def brute_force(solution,m,n):
 def random_search():
 
     best_one = None
-    best_value = float('inf')
+    best_board_value = float('inf')
 
-    num_iters = 10
+    num_iters = 1000000
     values = [None for _ in range(num_iters)]
 
     for i in range(num_iters):
         solution = initialize()
-        penalty = board_value(solution)
-        if penalty < best_value:
+        penalty = calc_board_value(solution)
+        if penalty < best_board_value:
             best_one = solution
-            best_value = penalty
-        values[i] = best_value
+            best_board_value = penalty
+        values[i] = best_board_value
 
-    print('Board value',best_value)
+    print('Board value',best_board_value)
     print_board(best_one)
     plt.plot(range(num_iters),values)
     plt.show()
         
 
-def local_search_invert_best_improvement(solution,value):
-    improved = True
-    while improved:
-        improved = False
+def local_search_invert_best_improvement(solution,board_value):
+    improved_board = True
+    while improved_board:
+        improved_board = False
         best = None
-        best_value = value
+        best_board_value = board_value
         best_mine_count = calc_mines(solution)
 
         for elem in solution.keys():
             solution[elem] = not solution[elem]
-            new_value = board_value(solution)
+            new_board_value = calc_board_value(solution)
             current_mines = calc_mines(solution)
-            if new_value < best_value or (new_value == best_value and current_mines < best_mine_count):
-                best_value = new_value
-                improved = True
+            if new_board_value < best_board_value or (new_board_value == best_board_value and current_mines < best_mine_count):
+                best_board_value = new_board_value
+                improved_board = True
                 best = elem
                 best_mine_count = current_mines
             solution[elem] = not solution[elem]
-        if improved:
+        if improved_board:
             solution[best] = not solution[best]
-            value = best_value
-    return solution, value
+            board_value = best_board_value
+    return solution, board_value
 
 def change_solution(solution):
     new_solution = copy.deepcopy(solution)
@@ -168,30 +167,30 @@ def change_solution(solution):
 
 def simulated_annealing(num_iters):
     solution = initialize()
-    value = board_value(solution)
+    board_value = calc_board_value(solution)
     best = copy.deepcopy(solution)
-    best_value = float('inf')
+    best_board_value = float('inf')
     best_mine_count = calc_mines(solution)
 
     for i in range(num_iters):
         new_solution = change_solution(solution)
-        new_value = board_value(new_solution)
+        new_board_value = calc_board_value(new_solution)
         current_mines = calc_mines(new_solution)
-        if new_value < value:
-            value = new_value
+        if new_board_value < board_value:
+            board_value = new_board_value
             solution = copy.deepcopy(new_solution)
-            if new_value < best_value or (new_value == best_value and current_mines < best_mine_count):
-                best_value = new_value
+            if new_board_value < best_board_value or (new_board_value == best_board_value and current_mines < best_mine_count):
+                best_board_value = new_board_value
                 best = copy.deepcopy(new_solution)
                 best_mine_count = current_mines
         else:
             if random.random() < 1/(i+1):
-                value = new_value
+                board_value = new_board_value
                 solution = copy.deepcopy(new_solution)
 
-    return best, best_value
+    return best, best_board_value
 
-def shake(solution,k):
+def change_solution_vns(solution,k):
     new_solution = copy.deepcopy(solution)
     chosen_elements = random.sample(list(solution.keys()),k)
     for elem in chosen_elements:
@@ -200,52 +199,52 @@ def shake(solution,k):
 
 def vns(k0,kn,num_iters):
     solution = initialize()
-    value = board_value(solution)
+    board_value = calc_board_value(solution)
     best_mine_count = calc_mines(solution)
 
     for i in range(num_iters):
         for k in range(k0,kn):
-            new_solution = shake(solution,k)
-            new_value = board_value(new_solution)
-            new_solution, new_value = local_search_invert_best_improvement(new_solution,new_value)
+            new_solution = change_solution_vns(solution,k)
+            new_board_value = calc_board_value(new_solution)
+            new_solution, new_board_value = local_search_invert_best_improvement(new_solution,new_board_value)
             current_mines = calc_mines(new_solution)
-            if new_value < value or (new_value == value and random.random() < 0.5 or
-                                     new_value == value and current_mines < best_mine_count):
-                value = new_value
+            if new_board_value < board_value or (new_board_value == board_value and random.random() < 0.5 or
+                                                 new_board_value == board_value and current_mines < best_mine_count):
+                board_value = new_board_value
                 solution = copy.deepcopy(new_solution)
                 best_mine_count = current_mines
                 break
-    return solution, value
+    return solution, board_value
 
 def iterate():
     niz = []
     for i in range(100):
         print('Iteration #',(i+1))
-        solution, value = vns(5,10,100)
+        #solution, board_value = vns(5,10,100)
         #solution_for_local_search = initialize()
-        #value_for_local_search = board_value(solution_for_local_search)
-        #solution, value = local_search_invert_best_improvement(solution_for_local_search,value_for_local_search)
-        #solution, value = simulated_annealing(100000)
-        niz.append(value)
+        #value_for_local_search = calc_board_value(solution_for_local_search)
+        #solution, board_value = local_search_invert_best_improvement(solution_for_local_search,value_for_local_search)
+        #solution, board_value = simulated_annealing(100000)
+        niz.append(board_value)
     plt.plot(range(100),niz)
     plt.show()
 
 
 #iterate()
 start_time = time.time()
-#solution, value = vns(5,10,100)
-#solution, value = simulated_annealing(1000000)
-solution_for_local_search = initialize()
-value_for_local_search = board_value(solution_for_local_search)
+solution, board_value = vns(5,10,100)
+#solution, board_value = simulated_annealing(100000)
+#solution_for_local_search = initialize()
+#value_for_local_search = calc_board_value(solution_for_local_search)
 #brute_solution = init_brute()
 #brute_force(brute_solution,0,0)
-solution, value = local_search_invert_best_improvement(solution_for_local_search,value_for_local_search)
+#solution, board_value = local_search_invert_best_improvement(solution_for_local_search,value_for_local_search)
     
 #random_search()
 
 #print_board(brute_best_solution)
-#print(brute_best_value)
+#print(brute_best_board_value)
 
 print_board(solution)
-print(value)
+print(board_value)
 print('Time elapsed: ', time.time() - start_time)
