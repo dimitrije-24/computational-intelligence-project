@@ -2,11 +2,7 @@ import random
 import copy
 from typing import List
 import matplotlib.pyplot as plt
-import numpy as np
 import time
-
-import os, psutil
-process = psutil.Process()
 
 arrayp = [['1','.'],['.','.']]
 
@@ -123,7 +119,6 @@ def random_search():
 
     best_one = None
     best_value = float('inf')
-    #print('Best value',best_value)
 
     num_iters = 10
     values = [None for _ in range(num_iters)]
@@ -254,4 +249,3 @@ solution, value = local_search_invert_best_improvement(solution_for_local_search
 print_board(solution)
 print(value)
 print('Time elapsed: ', time.time() - start_time)
-#print(process.memory_info().rss)
