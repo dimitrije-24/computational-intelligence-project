@@ -4,18 +4,7 @@ from typing import List
 import matplotlib.pyplot as plt
 import time
 
-arrayp = [['1','.','.','.'],['.','.','.','.'],['.','.','4','.'],['.','.','.','.']]
-
-array = [['1','.','1','.','1','.','2','.','1','1'],
-         ['1','.','.','.','.','.','.','.','.','1'],
-         ['.','.','3','.','.','2','.','.','.','.'],
-         ['.','.','.','.','1','.','.','3','3','.'],
-         ['1','1','1','.','.','.','.','2','.','3'],
-         ['.','.','.','.','0','.','1','.','3','.'],
-         ['.','.','.','1','.','.','2','.','4','.'],
-         ['0','.','.','3','.','.','4','.','.','.'],
-         ['.','3','.','2','.','.','4','.','.','2'],
-         ['.','.','.','.','.','.','.','2','.','0']]
+array = None
 
 class Individual:
     def __init__(self):
@@ -114,12 +103,11 @@ def ga(population_size,num_generations,elitism_size,tournament_size,mutation_pro
         value = min(population,key=lambda x : (x.fitness,x.mines_total))
         values[i] = value.fitness
     
-    print('Time needed: ', time.time() - start_time)
     plt.plot(range(num_generations),values)
     plt.show()
     return min(population,key=lambda x: (x.fitness,x.mines_total))
 
-def stampaj(solution):
+def print_board(solution):
     n = len(array)
     m = len(array[0])
     for i in range(n):
@@ -133,7 +121,23 @@ def stampaj(solution):
                 print(array[i][j],end=' ')
         print('\n')
 
-start_time = time.time()
-best_individual = ga(population_size=100,num_generations=100,elitism_size=30,tournament_size=70,mutation_prob=0.05)
-stampaj(best_individual.code)
-print(best_individual.fitness)
+def main():
+    file_path = input('Enter file name: ')
+    try:
+        with open(file_path, 'r') as f:
+            global array
+            array = [list(line.strip().replace(",","")) for line in f]
+
+    except FileNotFoundError:
+        print("Error: File not found.")
+        exit(1)
+
+    population_size = int(input('Population size: '))
+    num_generations = int(input('Number of generations: '))
+
+    best_individual = ga(population_size=population_size,num_generations=num_generations,elitism_size=int(population_size*0.3),tournament_size=int(population_size*0.7),mutation_prob=0.05)
+    print_board(best_individual.code)
+    print(best_individual.fitness)
+
+if __name__ == '__main__':
+    main()
