@@ -2,34 +2,10 @@ import random
 import copy
 import matplotlib.pyplot as plt
 import time
+import sys
+import numpy as np
 
-arrayp = [['1','.'],['.','.']]
-
-array = [['1','.','.','.'],['.','.','.','.'],['.','.','4','.'],['.','.','.','.']]
-
-arrayp = [['1','.','1','.','1','.','2','.','1','1'],
-         ['1','.','.','.','.','.','.','.','.','1'],
-         ['.','.','3','.','.','2','.','.','.','.'],
-         ['.','.','.','.','1','.','.','3','3','.'],
-         ['1','1','1','.','.','.','.','2','.','3'],
-         ['.','.','.','.','0','.','1','.','3','.'],
-         ['.','.','.','1','.','.','2','.','4','.'],
-         ['0','.','.','3','.','.','4','.','.','.'],
-         ['.','3','.','2','.','.','4','.','.','2'],
-         ['.','.','.','.','.','.','.','2','.','0']]
-
-arrayp = [['1','.','1','.','1','.'],
-         ['1','.','.','.','.','.'],
-         ['.','.','3','.','.','1'],
-         ['.','.','.','.','1','.'],
-         ['1','2','.','.','.','.'],
-         ['.','.','.','.','.','0']]
-
-arrayp = [['.','1','.','.','.'],
-         ['1','.','2','.','.'],
-         ['.','.','.','3','.'],
-         ['.','.','1','.','.'],
-         ['.','.','.','.','.']]
+array = None
 
 def initialize():
     map = {}
@@ -135,8 +111,8 @@ def random_search():
 
     #print('Board value',best_board_value)
     #print_board(best_one)
-    plt.plot(range(num_iters),values)
-    plt.show()
+    #plt.plot(range(num_iters),values)
+    #plt.show()
     return best_one, best_board_value
 
 def local_search_invert_best_improvement(solution,board_value):
@@ -233,9 +209,24 @@ def iterate():
     plt.show()
 
 #iterate()
+    
+file_path = input('Enter file name: ')
+try:
+    with open(file_path, 'r') as f:
+        array = [list(line.strip().replace(",","")) for line in f]
 
-option = input('Add some of the following options: r,ls,sa,vns,bf\n')
+except FileNotFoundError:
+    print("Error: File not found.")
+    exit(1)
+
+option = input('Choose one of the following algorithms:\n\
+               r - Random Search\n\
+               ls - Local Search\n\
+               sa - Simulated annealing\n\
+               vns - Variable Neighborhood Search \n\
+               bf - Brute Force\n')
 start_time = time.time()
+
 if option == 'r':
     solution, board_value = random_search()
 elif option == 'ls':
@@ -256,10 +247,10 @@ elif option == 'bf':
     solution = brute_best_solution
     board_value = brute_best_board_value
 else:
-    print('Nonexistent input')
+    print('Non-existent option')
     exit(1)
     
 print_board(solution)
 print(board_value)
 
-print('Time elapsed: ', time.time() - start_time)
+#print('Time elapsed: ', time.time() - start_time)
